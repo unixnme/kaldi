@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(kaldi)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+set(BUILD_SHARED_LIBS ON)
+
 include(GNUInstallDirs)
 include(Utils)
 include(third_party/get_third_party)
@@ -219,6 +221,7 @@ add_subdirectory(src/ivectorbin)
 add_subdirectory(src/onlinebin)
 add_subdirectory(src/online2bin)
 add_subdirectory(src/kwsbin)
+add_subdirectory(src/decoderbin)
 
 # add all cuda executables
 if(CUDA_FOUND)
