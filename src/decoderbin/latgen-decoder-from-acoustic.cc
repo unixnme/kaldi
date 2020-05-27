@@ -6,7 +6,7 @@
 #include "util/common-utils.h"
 
 int Usage(const char* program) {
-    std::cerr << "Usage: " << program << "acoustic graph lattice" << std::endl;
+    std::cerr << "Usage: " << program << "acoustic_scale acoustic graph" << std::endl;
     return EXIT_FAILURE;
 }
 
@@ -14,14 +14,16 @@ int main(int argc, const char** argv) {
     using namespace kaldi;
 
     if (argc != 4) return Usage(argv[0]);
-    const std::string feat_rspecifier{argv[1]};
+    const auto acoustic_scale = std::stof(argv[1]);
+    const std::string feat_rspecifier{argv[2]};
     SequentialGeneralMatrixReader reader{feat_rspecifier};
-    auto graph = fst::StdVectorFst::Read(argv[2]);
+    auto graph = fst::StdVectorFst::Read(argv[3]);
 
     LatticeFasterDecoderConfig config;
+    config.max_active = 2000;
     LatticeFasterDecoder decoder{*graph, config};
     for (; !reader.Done(); reader.Next()) {
-        DecodableMatrixScaled decodable{reader.Value().GetFullMatrix(), 1};
+        DecodableMatrixScaled decodable{reader.Value().GetFullMatrix(), acoustic_scale};
         if (!decoder.Decode(&decodable))
             KALDI_ERR << "Failed to decode";
         fst::VectorFst<LatticeArc> decoded;
@@ -40,13 +42,6 @@ int main(int argc, const char** argv) {
             std::cout << s << ' ';
         }
         std::cout << '\n';
-
-//        for (auto frame = 0; !decodable.IsLastFrame(frame); ++frame) {
-//            for (auto idx = 0; idx < decodable.NumIndices(); ++idx) {
-//                std::cout << decodable.LogLikelihood(frame, idx + 1) << "\t";
-//            }
-//            std::cout << std::endl;
-//        }
     }
     return 0;
 }
